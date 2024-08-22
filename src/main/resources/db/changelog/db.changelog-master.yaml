@@ -1,0 +1,6 @@
+databaseChangeLog:
+  - includeAll:
+      path: db/migrate/migrations/
+
+  - includeAll:
+      path: db/migrate/seeders/

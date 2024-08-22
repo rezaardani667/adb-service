@@ -1,0 +1,111 @@
+image: maven:3-eclipse-temurin-21
+
+definitions:
+  services:
+      postgres:
+        image: postgres
+        environment:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          DATABASE_URL: postgres://127.0.0.1:5432/postgres
+      redis:
+        image: redis
+  caches:
+    sonar: ~/.sonar
+  steps:
+    - step: &Build
+        name: Build
+        caches:
+          - maven
+          - sonar
+        script:
+          - mvn clean install -U
+        artifacts:
+          - BITBUCKET_CLONE_DIR/$BITBUCKET_REPO_SLUG/target/adb-service-0.0.1-SNAPSHOT.jar
+        services:
+          - redis
+    - step: &BuildImage
+        name: Build and Push
+        image: luklukls/aws-helm:dod
+        script:INFO 173309 --- [1)-192.168.1.81] o.s.a.r.c.CachingConnectionFactory       : Created new connection: rabbitConnectionFactory#5978ba12:0/SimpleConnection@18a4c814 [delegate=amqp://guest@127.0.0.1:5672/, localPort=41282]
+
+          - eval $(aws ecr get-login --region ${AWS_DEFAULT_REGION} --no-include-email)
+          - export AWS_REGISTRY_URL="$AWS_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BITBUCKET_REPO_SLUG"
+          - export BUILD_ID="$BITBUCKET_BRANCH-$BITBUCKET_COMMIT-$BITBUCKET_BUILD_NUMBER"
+          - docker build -t ${AWS_REGISTRY_URL}:$BUILD_ID .
+          - docker push ${AWS_REGISTRY_URL}:$BUILD_ID
+          - docker tag ${AWS_REGISTRY_URL}:$BUILD_ID ${AWS_REGISTRY_URL}:development
+          - docker push ${AWS_REGISTRY_URL}:development
+          - echo $BUILD_ID > buildid.txt
+        services:
+          - docker    
+          - redis
+        caches:
+            - maven
+            - sonar
+        artifacts:
+          - BITBUCKET_CLONE_DIR/$BITBUCKET_REPO_SLUG/target/notify-service-0.0.1-SNAPSHOT.jar
+          - buildid.txt
+    - step: &Deployer
+        image: luklukls/aws-helm:dod
+        script:
+          - export BUILDID=$(cat buildid.txt)
+          - export IMAGE="$AWS_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BITBUCKET_REPO_SLUG"
+          - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name $CLUSTER
+          - aws ecr get-login-password --region $AWS_DEFAULT_REGION | helm registry login --username AWS --password-stdin $AWS_ACCOUNT.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+          - >-
+            helm upgrade --namespace $NAMESPACE --install 
+            --set image.repository=$IMAGE 
+            --set image.tag=$BUILDID 
+            --set apmserver=$APM_SERVER
+            --set java.enabled=true
+            --set java.jar=$BITBUCKET_REPO_SLUG-0.0.1-SNAPSHOT.jar
+            --set environment=$BITBUCKET_DEPLOYMENT_ENVIRONMENT
+            $BITBUCKET_REPO_SLUG $APP_CHART
+clone:
+  depth: full
+  
+pipelines:
+  branches:
+    development:
+      - step:
+          <<: *Build
+      - step:
+          <<: *BuildImage
+      - step:
+          <<: *Deployer
+          name: Deploy to Development
+          deployment: development
+    main:
+      - step:
+          name: SonarQube analysis
+          services:
+            - redis
+          caches:
+            - maven
+            - sonar
+          script:
+            - mvn verify sonar:sonar -Dsonar.projectKey=$SONAR_PROJECT_KEY -Dsonar.host.url=$SONAR_HOST_URL      
+      - step:
+          <<: *Build
+      - step:
+          <<: *BuildImage         
+      - step:
+          <<: *Deployer
+          name: Deploy to Production
+          trigger: manual
+          deployment: production
+          runs-on:
+            - private.runner
+  custom:
+    deployDev:
+      - step:
+          <<: *Build
+      - step:
+          <<: *BuildImage
+      - step:
+          <<: *Deployer
+          name: Deploy to Development
+          trigger: manual
+          deployment: development  
