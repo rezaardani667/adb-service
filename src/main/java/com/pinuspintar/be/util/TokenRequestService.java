@@ -15,17 +15,23 @@ public class TokenRequestService {
 
     @Transactional
     public void createTokenRequest(String merchantUserId, String instruksi) {
-        // Generate token
         String token = TokenGenerator.generateToken();
 
-        // Buat entitas TokenRequest
         TokenRequest tokenRequest = new TokenRequest();
         tokenRequest.setMerchantUserId(merchantUserId);
         tokenRequest.setToken(token);
         tokenRequest.setStatus("pending");
         tokenRequest.setInstruksi(instruksi);
 
-        // Simpan ke database
         tokenRequestRepository.save(tokenRequest);
+    }
+
+    public TokenRequest insertTokenRequest(TokenRequest tokenRequest) {
+        return tokenRequestRepository.save(tokenRequest);
+    }
+
+    public TokenRequest getTokenRequestById(Long id) {
+        return tokenRequestRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("TokenRequest not found"));
     }
 }
