@@ -14,7 +14,7 @@ public class TokenRequestService {
     private TokenRequestRepository tokenRequestRepository;
 
     @Transactional
-    public void createTokenRequest(String merchantUserId, String instruksi) {
+    public TokenRequest createTokenRequest(String merchantUserId, String instruksi) {
         String token = TokenGenerator.generateToken();
 
         TokenRequest tokenRequest = new TokenRequest();
@@ -23,7 +23,7 @@ public class TokenRequestService {
         tokenRequest.setStatus("pending");
         tokenRequest.setInstruksi(instruksi);
 
-        tokenRequestRepository.save(tokenRequest);
+        return tokenRequestRepository.save(tokenRequest);
     }
 
     public TokenRequest insertTokenRequest(TokenRequest tokenRequest) {
@@ -34,4 +34,11 @@ public class TokenRequestService {
         return tokenRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TokenRequest not found"));
     }
+
+    @Transactional
+    public TokenRequest updateStatus(Long id, String newStatus) {
+        TokenRequest tokenRequest = getTokenRequestById(id);
+            tokenRequest.setStatus(newStatus);
+            return tokenRequestRepository.save(tokenRequest);
+        }
 }

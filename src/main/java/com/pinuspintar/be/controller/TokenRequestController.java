@@ -3,8 +3,10 @@ package com.pinuspintar.be.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import com.pinuspintar.be.util.TokenRequestService;
 import com.pinuspintar.be.model.TokenRequest;
+import com.pinuspintar.be.DTO.UpdateStatusRequest;
 
 @RestController
 @RequestMapping("/api")
@@ -14,9 +16,9 @@ public class TokenRequestController {
     private TokenRequestService tokenRequestService;
 
     @PostMapping("/token-request")
-    public ResponseEntity<TokenRequest> createTokenRequest(@RequestBody TokenRequest tokenRequest) {
-        tokenRequestService.createTokenRequest(tokenRequest.getMerchantUserId(), tokenRequest.getInstruksi());
-        return ResponseEntity.ok(tokenRequest);
+    public ResponseEntity<TokenRequest> createTokenRequest(@Valid @RequestBody TokenRequest tokenRequest) {
+        TokenRequest savedTokenRequest = tokenRequestService.createTokenRequest(tokenRequest.getMerchantUserId(), tokenRequest.getInstruksi());
+        return ResponseEntity.ok(savedTokenRequest);
     }
 
     @GetMapping("/{id}")
@@ -25,5 +27,13 @@ public class TokenRequestController {
         return ResponseEntity.ok(tokenRequest);
     }
 
-    // Tambahkan endpoint lain sesuai kebutuhan (misalnya update status atau delete)
+    @PutMapping("/token-request/{id}/status")
+    public ResponseEntity<TokenRequest> updateStatus(@PathVariable Long id, @RequestBody String status) {
+        try {
+            TokenRequest updatedTokenRequest = tokenRequestService.updateStatus(id, status);
+            return ResponseEntity.ok(updatedTokenRequest);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
