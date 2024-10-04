@@ -6,6 +6,7 @@ import com.pinuspintar.be.util.TokenGenerator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import java.util.UUID;
 
 @Service
 public class TokenRequestService {
@@ -30,13 +31,13 @@ public class TokenRequestService {
         return tokenRequestRepository.save(tokenRequest);
     }
 
-    public TokenRequest getTokenRequestById(Long id) {
+    public TokenRequest getTokenRequestById(UUID id) {
         return tokenRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("TokenRequest not found"));
     }
 
     @Transactional
-    public TokenRequest updateStatus(Long id, String newStatus) {
+    public TokenRequest updateStatus(UUID id, String newStatus) {
         TokenRequest tokenRequest = getTokenRequestById(id);
             tokenRequest.setStatus(newStatus);
             return tokenRequestRepository.save(tokenRequest);

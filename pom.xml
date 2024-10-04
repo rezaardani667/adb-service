@@ -116,7 +116,27 @@
             <version>2.0.1</version>
         </dependency>
     </dependencies>
+    <dependencies>
+        <groupId>org.liquibase</groupId>
+        <artifactId>liquibase-core</artifactId>
+        <version>4.23.0</version>
+    </dependencies>
 <!-- include below build tag to your existing pom.xml  -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>4.23.0</version>
+                <configuration>
+                    <changeLogFile>src/main/resources/db/changelog-master.xml</changeLogFile>
+                    <url>jdbc:postgresql://localhost:8086/postgres</url>
+                    <username>rezaardani</username>
+                    <password>123123</password>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <build>
         <plugins>
             <plugin>

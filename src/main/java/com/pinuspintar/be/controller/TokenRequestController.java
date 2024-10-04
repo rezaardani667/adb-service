@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import com.pinuspintar.be.util.TokenRequestService;
 import com.pinuspintar.be.model.TokenRequest;
 import com.pinuspintar.be.DTO.UpdateStatusRequest;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -22,15 +23,14 @@ public class TokenRequestController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TokenRequest> getTokenRequest(@PathVariable Long id) {
+    public ResponseEntity<TokenRequest> getTokenRequest(@PathVariable UUID id) {
         TokenRequest tokenRequest = tokenRequestService.getTokenRequestById(id);
         return ResponseEntity.ok(tokenRequest);
     }
 
     @PutMapping("/token-request/{id}/status")
-    public ResponseEntity<TokenRequest> updateStatus(@PathVariable Long id, @RequestBody String status) {
-        try {
-            TokenRequest updatedTokenRequest = tokenRequestService.updateStatus(id, status);
+    public ResponseEntity<TokenRequest> updateStatus(@PathVariable UUID id, @RequestBody String status) {
+        try {TokenRequest updatedTokenRequest = tokenRequestService.updateStatus(id, status);
             return ResponseEntity.ok(updatedTokenRequest);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();

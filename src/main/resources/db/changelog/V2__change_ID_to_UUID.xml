@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+        http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <!-- ChangeSet untuk mengubah kolom id menjadi UUID -->
+    <changeSet id="2" author="rezaardani">
+
+        <!-- 1. Mengaktifkan Ekstensi pgcrypto -->
+        <sql>
+            CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+        </sql>
+
+        <!-- 2. Menambahkan Kolom UUID Baru -->
+        <addColumn tableName="token_request">
+            <column name="new_id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <!-- 3. Memperbarui Nilai UUID untuk Setiap Baris -->
+        <update tableName="token_request">
+            <column name="new_id" valueComputed="gen_random_uuid()"/>
+            <where>new_id IS NULL</where>
+        </update>
+
+        <!-- 4. Menghapus Constraint Primary Key Lama -->
+        <dropPrimaryKey tableName="token_request" constraintName="token_request_pkey"/>
+
+        <!-- 5. Menetapkan new_id sebagai Primary Key -->
+        <addPrimaryKey tableName="token_request" columnNames="new_id" constraintName="token_request_pkey"/>
+
+        <!-- 6. Menghapus Kolom id yang Lama -->
+        <dropColumn tableName="token_request" columnName="id"/>
+
+        <!-- 7. Mengganti Nama Kolom new_id menjadi id -->
+        <renameColumn tableName="token_request" oldColumnName="new_id" newColumnName="id" columnDataType="UUID"/>
+
+    </changeSet>
+
+</databaseChangeLog>
