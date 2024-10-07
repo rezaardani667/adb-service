@@ -13,27 +13,31 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class TokenRequestController {
 
-    @Autowired
-    private TokenRequestService tokenRequestService;
+	@Autowired
+	private TokenRequestService tokenRequestService;
 
-    @PostMapping("/token-request")
-    public ResponseEntity<TokenRequest> createTokenRequest(@Valid @RequestBody TokenRequest tokenRequest) {
-        TokenRequest savedTokenRequest = tokenRequestService.createTokenRequest(tokenRequest.getMerchantUserId(), tokenRequest.getInstruksi());
-        return ResponseEntity.ok(savedTokenRequest);
-    }
+	@PostMapping("/token-request")
+	public ResponseEntity<TokenRequest> createTokenRequest(@Valid @RequestBody TokenRequest tokenRequest) {
+		TokenRequest savedTokenRequest = tokenRequestService.createTokenRequest(tokenRequest.getMerchantUserId(),
+				tokenRequest.getInstruksi());
+		return ResponseEntity.ok(savedTokenRequest);
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TokenRequest> getTokenRequest(@PathVariable UUID id) {
-        TokenRequest tokenRequest = tokenRequestService.getTokenRequestById(id);
-        return ResponseEntity.ok(tokenRequest);
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<TokenRequest> getTokenRequest(@PathVariable UUID id) {
+		TokenRequest tokenRequest = tokenRequestService.getTokenRequestById(id);
+		return ResponseEntity.ok(tokenRequest);
+	}
 
-    @PutMapping("/token-request/{id}/status")
-    public ResponseEntity<TokenRequest> updateStatus(@PathVariable UUID id, @RequestBody String status) {
-        try {TokenRequest updatedTokenRequest = tokenRequestService.updateStatus(id, status);
-            return ResponseEntity.ok(updatedTokenRequest);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+	@PutMapping("/token-request/{id}/status")
+	public ResponseEntity<TokenRequest> updateStatus(@PathVariable UUID id, @RequestBody String status) {
+		try {
+			TokenRequest updatedTokenRequest = tokenRequestService.updateStatus(id, status);
+			return ResponseEntity.ok(updatedTokenRequest);
+		}
+		catch (RuntimeException e) {
+			return ResponseEntity.notFound().build();
+		}
+	}
+
 }

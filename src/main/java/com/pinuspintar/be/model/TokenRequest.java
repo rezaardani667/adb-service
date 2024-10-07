@@ -10,61 +10,61 @@ import java.util.UUID;
 @Entity
 public class TokenRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private UUID id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private UUID id;
 
-    @NotBlank(message = "Merchant User ID cannot be blank.")
-    private String merchantUserId;
+	@NotBlank(message = "Merchant User ID cannot be blank.")
+	private String merchantUserId;
 
-    private String token;
+	private String token;
 
-    @NotBlank(message = "Instruksi cannot be blank.")
-    private String instruksi;
+	@NotBlank(message = "Instruksi cannot be blank.")
+	private String instruksi;
 
-    @NotBlank(message = "Status cannot be blank.")
-    private String status;
+	@NotBlank(message = "Status cannot be blank.")
+	private String status;
 
-    // Getters and Setters
+	// Getters and Setters
 
+	public UUID getId() {
+		return id;
+	}
 
-    public UUID getId() {
-        return id;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
 
-    public void setId(UUID id) {
-        this.id = id;
-    }
+	public String getMerchantUserId() {
+		return merchantUserId;
+	}
 
-    public String getMerchantUserId() {
-        return merchantUserId;
-    }
+	public void setMerchantUserId(String merchantUserId) {
+		this.merchantUserId = merchantUserId;
+	}
 
-    public void setMerchantUserId(String merchantUserId) {
-        this.merchantUserId = merchantUserId;
-    }
+	public String getToken() {
+		return token;
+	}
 
-    public String getToken() {
-        return token;
-    }
+	public void setToken(String token) {
+		this.token = token;
+	}
 
-    public void setToken(String token) {
-        this.token = token;
-    }
+	public String getInstruksi() {
+		return instruksi;
+	}
 
-    public String getInstruksi() {
-        return instruksi;
-    }
+	public void setInstruksi(String instruksi) {
+		this.instruksi = instruksi;
+	}
 
-    public void setInstruksi(String instruksi) {
-        this.instruksi = instruksi;
-    }
+	public String getStatus() {
+		return status;
+	}
 
-    public String getStatus() {
-        return status;
-    }
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
 }
