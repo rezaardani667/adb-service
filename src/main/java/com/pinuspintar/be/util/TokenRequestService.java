@@ -1,5 +1,6 @@
 package com.pinuspintar.be.util;
 
+import com.pinuspintar.be.DTO.CreateTokenRequest;
 import com.pinuspintar.be.enums.Status;
 import com.pinuspintar.be.model.TokenRequest;
 import com.pinuspintar.be.repository.TokenRequestRepository;
@@ -16,19 +17,21 @@ public class TokenRequestService {
 	private TokenRequestRepository tokenRequestRepository;
 
 	@Transactional
-	public TokenRequest createTokenRequest(String merchantUserId, String instruksi) {
+	public TokenRequest createTokenRequest(CreateTokenRequest request) {
 		String token = TokenGenerator.generateToken();
 
 		TokenRequest tokenRequest = new TokenRequest();
-		tokenRequest.setMerchantUserId(merchantUserId);
+		tokenRequest.setMerchantUserId(request.getMerchantUserId());
 		tokenRequest.setToken(token);
 		tokenRequest.setStatus(Status.pending.name());
-		tokenRequest.setInstruksi(instruksi);
+		tokenRequest.setInstruksi("");
+
 
 		return tokenRequestRepository.save(tokenRequest);
 	}
 
 	public TokenRequest insertTokenRequest(TokenRequest tokenRequest) {
+
 		return tokenRequestRepository.save(tokenRequest);
 	}
 

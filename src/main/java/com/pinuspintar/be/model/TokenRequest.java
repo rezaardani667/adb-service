@@ -19,7 +19,6 @@ public class TokenRequest {
 
 	private String token;
 
-	@NotBlank(message = "Instruksi cannot be blank.")
 	private String instruksi;
 
 	@NotBlank(message = "Status cannot be blank.")

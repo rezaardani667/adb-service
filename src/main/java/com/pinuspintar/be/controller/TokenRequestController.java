@@ -1,5 +1,6 @@
 package com.pinuspintar.be.controller;
 
+import com.pinuspintar.be.DTO.CreateTokenRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,14 +18,13 @@ public class TokenRequestController {
 	private TokenRequestService tokenRequestService;
 
 	@PostMapping("/token-request")
-	public ResponseEntity<TokenRequest> createTokenRequest(@Valid @RequestBody TokenRequest tokenRequest) {
-		TokenRequest savedTokenRequest = tokenRequestService.createTokenRequest(tokenRequest.getMerchantUserId(),
-				tokenRequest.getInstruksi());
+	public ResponseEntity<TokenRequest> createTokenRequest(@Valid @RequestBody CreateTokenRequest tokenRequest) {
+		TokenRequest savedTokenRequest = tokenRequestService.createTokenRequest(tokenRequest);
 		return ResponseEntity.ok(savedTokenRequest);
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<TokenRequest> getTokenRequest(@PathVariable UUID id) {
+	public ResponseEntity<TokenRequest> getTokenRequestById(@PathVariable UUID id) {
 		TokenRequest tokenRequest = tokenRequestService.getTokenRequestById(id);
 		return ResponseEntity.ok(tokenRequest);
 	}
