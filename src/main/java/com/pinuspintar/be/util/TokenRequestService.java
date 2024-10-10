@@ -1,5 +1,6 @@
 package com.pinuspintar.be.util;
 
+import com.pinuspintar.be.enums.Status;
 import com.pinuspintar.be.model.TokenRequest;
 import com.pinuspintar.be.repository.TokenRequestRepository;
 import com.pinuspintar.be.util.TokenGenerator;
@@ -21,7 +22,7 @@ public class TokenRequestService {
 		TokenRequest tokenRequest = new TokenRequest();
 		tokenRequest.setMerchantUserId(merchantUserId);
 		tokenRequest.setToken(token);
-		tokenRequest.setStatus("pending");
+		tokenRequest.setStatus(Status.pending.name());
 		tokenRequest.setInstruksi(instruksi);
 
 		return tokenRequestRepository.save(tokenRequest);
