@@ -43,4 +43,11 @@ public class TokenRequestService {
 		return tokenRequestRepository.save(tokenRequest);
 	}
 
+	@Transactional
+	public TokenRequest updateToken(UUID id, String token) {
+		TokenRequest tokenRequest = getTokenRequestById(id);
+		tokenRequest.setToken(token);
+		return tokenRequestRepository.save(tokenRequest);
+	}
+
 }
