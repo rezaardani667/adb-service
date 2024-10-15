@@ -1,13 +1,15 @@
 package com.pinuspintar.be.scheduler;
 
 import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseeract;
+import net.sourceforge.tess4j.Tesseract;
+import net.sourceforge.tess4j.TesseractException;
 
+import java.io.File;
 
 public class OCR {
     public static String extractText(String imagePath) {
         ITesseract instance = new Tesseract();
-        instance.setDatapath(/usr/local/share/tessdata/);
+        instance.setDatapath("/usr/local/share/tessdata/");
         try {
             String result = instance.doOCR(new File(imagePath));
             return result;

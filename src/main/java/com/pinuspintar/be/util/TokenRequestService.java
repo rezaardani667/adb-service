@@ -28,10 +28,6 @@ public class TokenRequestService {
 		return tokenRequestRepository.save(tokenRequest);
 	}
 
-	public TokenRequest insertTokenRequest(TokenRequest tokenRequest) {
-		return tokenRequestRepository.save(tokenRequest);
-	}
-
 	public TokenRequest getTokenRequestById(UUID id) {
 		return tokenRequestRepository.findById(id).orElseThrow(() -> new RuntimeException("TokenRequest not found"));
 	}

@@ -3,73 +3,78 @@ package com.pinuspintar.be.scheduler;
 import com.pinuspintar.be.enums.Status;
 import com.pinuspintar.be.model.TokenRequest;
 import com.pinuspintar.be.repository.TokenRequestRepository;
+import com.pinuspintar.be.util.TokenRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import net.sourceforge.tess4j.ITesseract;
-import net.sourceforge.tess4j.Tesseract;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 
 @Component
 public class GenerateTokenJob {
 
+    private static final Logger logger = LoggerFactory.getLogger(GenerateTokenJob.class);
+
     @Autowired
     TokenRequestRepository tokenRequestRepository;
 
-    @Scheduled(fixedRate = 1000)
+    @Autowired
+    TokenRequestService tokenRequestService;
+
+    private static final String TESSDATA_PATH = "/usr/local/share/tessdata";
+    private static final String SCREENSHOT_DESTINATION = "/Users/pinus/Documents/adb-service/Screenshot/screenshot.png";
+
+    @Scheduled(fixedRate = 10000)
     public void genToken() {
-        System.out.println("helo");
+        logger.info("Generating token...");
+
         List<TokenRequest> tokenRequestList = tokenRequestRepository.findTokenRequestByStatus(Status.pending.name());
-        tokenRequestList.stream().forEach(tokenReq -> {
+
+        tokenRequestList.forEach(tokenReq -> {
             try {
-<<<<<<< Updated upstream
-                Process p = Runtime.getRuntime().exec(new String[]{"ls"});
-                System.out.println(p.getOutputStream().toString());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-=======
-                System.out.println("execute");
-                Process p = Runtime.getRuntime().exec("adb shell input tap 693 1394");
-                p.waitFor();
-                Thread.sleep(2000);
-                p = Runtime.getRuntime().exec("adb shell input tap 546 418");
-                p.waitFor();
-                Thread.sleep(2000);
-                p = Runtime.getRuntime().exec("adb shell input tap 556 821");
-                p.waitFor();
-                Thread.sleep(2000);
-                p = Runtime.getRuntime().exec("adb shell input tap 518 1891");
-                p.waitFor();
-                Thread.sleep(2000);
-                p = Runtime.getRuntime().exec("adb shell input tap 260 1227");
-                p.waitFor();
-                Thread.sleep(2000);
-                p = Runtime.getRuntime().exec("adb shell input tap 553 2176");
-                p.waitFor();
-                Thread.sleep(2000);
-                p = Runtime.getRuntime().exec("adb shell input tap 574 2162");
-                p.waitFor();
-                //@TODO: adb screenshoot, hasil di simpan di suatu tempat
-                //@TODO: run tesseract untuk ambil angka dari screenshoot file
-                //@TODO: angkanya di simpan ke database
-                BufferedReader reader =
-                        new BufferedReader(new InputStreamReader(p.getInputStream()));
+                executeAdbCommands();
 
-                String line = "";
-                while ((line = reader.readLine())!= null) {
-                    System.out.println(line);
+                ScreenshotTaker screenshotTaker = new ScreenshotTaker(SCREENSHOT_DESTINATION);
+                screenshotTaker.takeScreenshot();
+
+                String extractedText = OCR.extractText(SCREENSHOT_DESTINATION);
+                if (extractedText != null) {
+                    extractedText = extractedText.replaceAll("\\D+", "");
                 }
-                //@todo: update token tokenRequestService.updateToken(tokenReq.getId(), token);
-                tokenRequestService.updateStatus(tokenReq.getId(), Status.success.name());
-                System.out.println("Processed TokenRequest with ID: " + tokenReq.getId());
-            } catch (Exception e) {
-                System.err.println("Error processing TokenRequest with ID: " + tokenReq.getId());
-                e.printStackTrace();
->>>>>>> Stashed changes
-            }
-        });
+                logger.info("Teks yg diekstrak: {}", extractedText);
 
+                if (extractedText != null && !extractedText.isEmpty()) {
+                    tokenRequestService.updateToken(tokenReq.getId(), extractedText);
+                    tokenRequestService.updateStatus(tokenReq.getId(), Status.success.name());
+                    logger.info("TokenRequest dgn ID: {} berhasil diproses.", tokenReq.getId());
+                } else {
+                    logger.error("Tidak ada angka yg diekstrak untuk TokenRequest dgn ID: {}", tokenReq.getId());
+                }
+
+            } catch (Exception e) {
+                logger.error("Error memproses TokenRequest dgn ID: {}", tokenReq.getId(), e);
+                e.printStackTrace();
+            }
+        }); // Menutup forEach lambda dengan '});'
+    }
+
+    private void executeAdbCommands() throws Exception {
+        String[] commands = {
+                "adb shell input tap 693 1394",
+                "adb shell input tap 546 418",
+                "adb shell input tap 556 821",
+                "adb shell input tap 518 1891",
+                "adb shell input tap 260 1227",
+                "adb shell input tap 553 2176",
+                "adb shell input tap 574 2162"
+        };
+
+        for (String command : commands) { // Menambahkan ')' setelah 'commands'
+            Process process = Runtime.getRuntime().exec(command);
+            process.waitFor();
+            Thread.sleep(2000); // Menunggu 2 detik setelah setiap tap
+        }
     }
 }
