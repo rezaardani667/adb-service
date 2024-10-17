@@ -1,17 +1,21 @@
 package com.pinuspintar.be.controller;
 
+import com.pinuspintar.be.repository.TransferRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import com.pinuspintar.be.util.TokenRequestService;
 import com.pinuspintar.be.model.TokenRequest;
-import com.pinuspintar.be.DTO.UpdateStatusRequest;
+import com.pinuspintar.be.model.TransferRequest;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
 public class TokenRequestController {
+
+	@Autowired
+	private TransferRequestRepository transferRequestRepository;
 
 	@Autowired
 	private TokenRequestService tokenRequestService;
@@ -21,6 +25,20 @@ public class TokenRequestController {
 		TokenRequest savedTokenRequest = tokenRequestService.createTokenRequest(tokenRequest.getMerchantUserId(),
 				tokenRequest.getInstruksi());
 		return ResponseEntity.ok(savedTokenRequest);
+	}
+
+	@PostMapping("/transfer")
+	public ResponseEntity<String> sendMoney(@Valid @RequestBody TransferRequest transferRequest) {
+		if (Double.parseDouble(transferRequest.getAmount()) <= 0) {
+			return ResponseEntity.badRequest().body("Amount must be greater than zero.");
+		}
+		transferRequestRepository.save(transferRequest);
+		boolean transferSuccess = true;
+		if (transferSuccess) {
+			return ResponseEntity.ok("Transfer of " + transferRequest.getAmount() + " via " + transferRequest.getChannel() + " was successful.");
+		} else {
+			return ResponseEntity.status(500).body("Transfer failed.");
+		}
 	}
 
 	@GetMapping("/{id}")

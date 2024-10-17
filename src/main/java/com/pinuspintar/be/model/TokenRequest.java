@@ -6,8 +6,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
+import lombok.Data;
 
 @Entity
+@Data
 public class TokenRequest {
 
 	@Id
@@ -24,47 +26,4 @@ public class TokenRequest {
 
 	@NotBlank(message = "Status cannot be blank.")
 	private String status;
-
-	// Getters and Setters
-
-	public UUID getId() {
-		return id;
-	}
-
-	public void setId(UUID id) {
-		this.id = id;
-	}
-
-	public String getMerchantUserId() {
-		return merchantUserId;
-	}
-
-	public void setMerchantUserId(String merchantUserId) {
-		this.merchantUserId = merchantUserId;
-	}
-
-	public String getToken() {
-		return token;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
-
-	public String getInstruksi() {
-		return instruksi;
-	}
-
-	public void setInstruksi(String instruksi) {
-		this.instruksi = instruksi;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
 }

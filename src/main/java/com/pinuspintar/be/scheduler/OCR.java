@@ -7,15 +7,18 @@ import net.sourceforge.tess4j.TesseractException;
 import java.io.File;
 
 public class OCR {
-    public static String extractText(String imagePath) {
-        ITesseract instance = new Tesseract();
-        instance.setDatapath("/usr/local/share/tessdata/");
-        try {
-            String result = instance.doOCR(new File(imagePath));
-            return result;
-        } catch (TesseractException e) {
-            e.printStacktrace();
-            return null;
-        }
-    }
+
+	public static String extractText(String imagePath) {
+		ITesseract instance = new Tesseract();
+		instance.setDatapath("/usr/local/share/tessdata/");
+		try {
+			String result = instance.doOCR(new File(imagePath));
+			return result;
+		}
+		catch (TesseractException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 }

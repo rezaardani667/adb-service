@@ -7,4 +7,5 @@ public class TokenGenerator {
 	public static String generateToken() {
 		return UUID.randomUUID().toString(); // Generate token
 	}
+
 }
