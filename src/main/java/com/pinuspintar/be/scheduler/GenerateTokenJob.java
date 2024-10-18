@@ -10,7 +10,11 @@ import org.springframework.stereotype.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 @Component
 public class GenerateTokenJob {
@@ -27,7 +31,7 @@ public class GenerateTokenJob {
 
 	private static final String SCREENSHOT_DESTINATION = "/Users/pinus/Documents/adb-service/Screenshot/screenshot.png";
 
-	@Scheduled(fixedRate = 10000)
+	@Scheduled(fixedRate = 1000)
 	public void genToken() {
 		logger.info("Generating token...");
 
@@ -60,7 +64,7 @@ public class GenerateTokenJob {
 				logger.error("Error memproses TokenRequest dgn ID: {}", tokenReq.getId(), e);
 				e.printStackTrace();
 			}
-		}); // Menutup forEach lambda dengan '});'
+		});
 	}
 
 	private void executeAdbCommands() throws Exception {
@@ -68,10 +72,15 @@ public class GenerateTokenJob {
 				"adb shell input tap 556 821", "adb shell input tap 518 1891", "adb shell input tap 260 1227",
 				"adb shell input tap 553 2176", "adb shell input tap 574 2162" };
 
-		for (String command : commands) { // Menambahkan ')' setelah 'commands'
+		for (String command : commands) {
 			Process process = Runtime.getRuntime().exec(command);
 			process.waitFor();
-			Thread.sleep(2000); // Menunggu 2 detik setelah setiap tap
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				logger.info("Output ADB: " + line);
+			}
+			Thread.sleep(2000);
 		}
 	}
 
