@@ -64,7 +64,6 @@ public class GenerateTokenJob {
 					logger.error("Tidak ada angka yang diekstrak untuk TokenRequest ID: {}", tokenRequest.getId());
 				}
 
-				// Jika berhasil, keluar dari loop
 				break;
 			} catch (Exception e) {
 				retryCount++;

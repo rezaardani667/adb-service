@@ -1,5 +1,8 @@
 package com.pinuspintar.be.util;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,14 +10,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.sourceforge.tess4j.Tesseract;
 
 public class OCR {
-	private static final String TESSERACT_CMD = "tesseract"; // Pastikan ini diatur ke path Tesseract jika tidak ada di PATH
+	private static final String TESSERACT_CMD = "tesseract";
 	private static final Logger log = LoggerFactory.getLogger(OCR.class);
+	private static final String RESULT_FILE_PATH = "/Users/pinus/Documents/adb-service/Screenshot/screenshot";
 
 	public static String extractNumbers(String imagePath) throws IOException, InterruptedException {
-		String resultFilePath = "/Users/pinus/Documents/adb-service/Screenshot/screenshot";
-		ProcessBuilder processBuilder = new ProcessBuilder(TESSERACT_CMD, imagePath, resultFilePath);
+		ProcessBuilder processBuilder = new ProcessBuilder(TESSERACT_CMD, imagePath, RESULT_FILE_PATH);
 		processBuilder.redirectErrorStream(true);
 		Process process = processBuilder.start();
 		int exitCode = process.waitFor();
@@ -22,7 +26,7 @@ public class OCR {
 			throw new RuntimeException("Error executing Tesseract: exit code " + exitCode);
 		}
 
-		String outputFilePath = resultFilePath + ".txt"; // Path untuk file output
+		String outputFilePath = RESULT_FILE_PATH + ".txt"; // Path untuk file output Tesseract
 
 		// Cek apakah file output ada
 		if (!Files.exists(Paths.get(outputFilePath))) {
@@ -33,17 +37,37 @@ public class OCR {
 		// Membaca hasil output dari file
 		String result = new String(Files.readAllBytes(Paths.get(outputFilePath)));
 
-		// Mengambil hanya angka dari hasil OCR
-		return extractNumbersFromText(result);
+		// Ekstrak hanya angka dari hasil OCR
+		String extractedNumbers = extractNumbersFromText(result);
+
+		// Simpan angka yang diekstrak ke dalam file 'screenshot.txt'
+		saveExtractedNumbers(extractedNumbers);
+
+		return extractedNumbers.trim();
 	}
 
+	// Method untuk mengekstrak angka dari teks yang dihasilkan OCR
 	private static String extractNumbersFromText(String text) {
-		Pattern pattern = Pattern.compile("\\d+"); // Regex untuk mencocokkan angka
+		StringBuilder numbersOnly = new StringBuilder();
+
+		Pattern pattern = Pattern.compile("\\d+");
 		Matcher matcher = pattern.matcher(text);
-		StringBuilder numbers = new StringBuilder();
+
 		while (matcher.find()) {
-			numbers.append(matcher.group()).append(" "); // Menambahkan pemisah spasi jika diinginkan
+			numbersOnly.append(matcher.group()).append("\n");
 		}
-		return numbers.toString().trim(); // Kembalikan hasil angka yang diekstrak
+
+		return numbersOnly.toString();
+	}
+
+	// Method untuk menyimpan hasil angka yang diekstrak ke file 'screenshot.txt'
+	private static void saveExtractedNumbers(String numbers) {
+		String outputFilePath = "/Users/pinus/Documents/adb-service/Screenshot/screenshot.txt"; // Lokasi yang benar
+
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFilePath))) {
+			writer.write(numbers);
+		} catch (IOException e) {
+			log.error("Gagal menyimpan angka ke screenshot.txt", e);
+		}
 	}
 }

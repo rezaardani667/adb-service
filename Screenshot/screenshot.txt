@@ -1,27 +1,19 @@
-Opana
-
-26 Jun 2024 * 06:11 DANA ID 0887+**6224
-
-(v) Transaction success!
-
-Send Money Rp2.200.000 to ARUM
-WAHYUNINGSIH - BCA ****5180
-
-SEND MONEY
-Total Payment Rp2.200.000
-Payment Method DANA Balance
-
-Receiver Detail
-
-Transaction Detail
-
-Remarks kebutuhan rumah tangg
-a bulan Juli 2024
-
-Transaction ID @ 2024062610121410010
+97
+26
+2024
+06
+11
+0887
+6224
+2
+200
+000
+5180
+2
+200
+000
+2024
+2024062610121410010
 100166883915162239
-
-Merchant Order ID + °° 2238
-External Serial Number 2024062678744888
-
-Secured by (a DANA PROTECTION
+2238
+2024062678744888
