@@ -3,8 +3,8 @@ package com.pinuspintar.be.scheduler;
 import com.pinuspintar.be.enums.Status;
 import com.pinuspintar.be.model.TokenRequest;
 import com.pinuspintar.be.repository.TokenRequestRepository;
-import com.pinuspintar.be.util.ADBOperations;
 import com.pinuspintar.be.util.ScreenshotTaker;
+import com.pinuspintar.be.util.OCR;
 import com.pinuspintar.be.util.TokenRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -13,53 +13,75 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class GenerateTokenJob {
 
 	private static final Logger logger = LoggerFactory.getLogger(GenerateTokenJob.class);
+	private static final String SCREENSHOT_PATH = "/Users/pinus/Documents/adb-service/Screenshot/screenshot.png";
 
 	@Autowired
-	TokenRequestRepository tokenRequestRepository;
+	private TokenRequestRepository tokenRequestRepository;
 
 	@Autowired
-	TokenRequestService tokenRequestService;
+	private TokenRequestService tokenRequestService;
 
-	private static final String SCREENSHOT_DESTINATION = "/Users/pinus/Documents/adb-service/Screenshot/ss.png";
-
-	private ADBOperations adbOperations = new ADBOperations();
-	private ScreenshotTaker screenshotTaker = new ScreenshotTaker(SCREENSHOT_DESTINATION);
+	private final ScreenshotTaker screenshotTaker = new ScreenshotTaker(SCREENSHOT_PATH);
 
 	@Scheduled(fixedRate = 1000)
-	public void genToken() {
-		List<TokenRequest> tokenRequestList = tokenRequestRepository.findTokenRequestByStatus(Status.pending.name());
+	public void generateToken() {
+		List<TokenRequest> pendingTokenRequests = tokenRequestRepository.findTokenRequestByStatus(Status.pending.name());
 
-		tokenRequestList.forEach(tokenReq -> {
+		pendingTokenRequests.forEach(tokenRequest -> {
 			try {
-				int[][] adbTapCoordinates = {
-						{693, 1394}, {546, 418}, {556, 821},
-						{518, 1891}, {260, 1227}, {553, 2176}, {574, 2162}
-				};
-				adbOperations.executeMultipleTapCommands(adbTapCoordinates);
+				generateTokenForRequest(tokenRequest);
+			} catch (Exception e) {
+				logger.error("Error memproses TokenRequest ID: " + tokenRequest.getId(), e);
+			}
+		});
+	}
+
+	// Method untuk memproses tiap TokenRequest dengan mekanisme retry
+	private void generateTokenForRequest(TokenRequest tokenRequest) {
+		int retryCount = 0;
+		while (retryCount < 3) {
+			try {
+				int[][] coordinates = {{693, 1394}, {546, 418}};
+				for (int[] coordinate : coordinates) {
+					screenshotTaker.tapScreen(coordinate[0], coordinate[1]);
+				}
 
 				screenshotTaker.takeScreenshot();
 
-				String extractedText = OCR.extractText(SCREENSHOT_DESTINATION);
-				extractedText = (extractedText != null) ? extractedText.replaceAll("\\D+", "") : null;
-				logger.info("Teks yg diekstrak: {}", extractedText);
+				String extractedNumbers = OCR.extractNumbers(SCREENSHOT_PATH);
 
-				if (extractedText != null && !extractedText.isEmpty()) {
-					// Update token dan status
-					tokenRequestService.updateToken(tokenReq.getId(), extractedText);
-					tokenRequestService.updateStatus(tokenReq.getId(), Status.success.name());
-					logger.info("TokenRequest dgn ID: {} berhasil diproses.", tokenReq.getId());
+				if (!extractedNumbers.isEmpty()) {
+					tokenRequestService.updateToken(tokenRequest.getId(), extractedNumbers);
+					tokenRequestService.updateStatus(tokenRequest.getId(), Status.success.name());
+					logger.info("TokenRequest ID: {} berhasil diproses dengan token: {}", tokenRequest.getId(), extractedNumbers);
 				} else {
-					logger.error("Tidak ada angka yg diekstrak untuk TokenRequest dgn ID: {}", tokenReq.getId());
+					logger.error("Tidak ada angka yang diekstrak untuk TokenRequest ID: {}", tokenRequest.getId());
 				}
+
+				// Jika berhasil, keluar dari loop
+				break;
 			} catch (Exception e) {
-				logger.error("Error memproses TokenRequest dgn ID: {}", tokenReq.getId(), e);
-				e.printStackTrace();
+				retryCount++;
+				logger.warn("Attempt " + retryCount + " failed for TokenRequest ID: " + tokenRequest.getId(), e);
+				if (retryCount == 3) {
+					logger.error("Final failure for TokenRequest ID: " + tokenRequest.getId(), e);
+				}
 			}
-		});
+		}
+	}
+
+	public void takeScreenshot() {
+		try {
+			TimeUnit.SECONDS.sleep(2);
+			screenshotTaker.takeScreenshot();
+		} catch (InterruptedException e) {
+			logger.error("Delay interrupted while taking screenshot.",e);
+		}
 	}
 }

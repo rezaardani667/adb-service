@@ -15,6 +15,13 @@ public class TokenRequestService {
 	@Autowired
 	private TokenRequestRepository tokenRequestRepository;
 
+	public void updateToken(UUID id, String token) {
+		TokenRequest tokenRequest = tokenRequestRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("TokenRequest not found."));
+		tokenRequest.setToken(token);
+		tokenRequestRepository.save(tokenRequest);
+	}
+
 	@Transactional
 	public TokenRequest createTokenRequest(String merchantUserId, String instruksi) {
 		String token = TokenGenerator.generateToken();
@@ -38,12 +45,4 @@ public class TokenRequestService {
 		tokenRequest.setStatus(newStatus);
 		return tokenRequestRepository.save(tokenRequest);
 	}
-
-	@Transactional
-	public TokenRequest updateToken(UUID id, String token) {
-		TokenRequest tokenRequest = getTokenRequestById(id);
-		tokenRequest.setToken(token);
-		return tokenRequestRepository.save(tokenRequest);
-	}
-
 }

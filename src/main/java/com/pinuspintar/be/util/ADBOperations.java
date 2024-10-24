@@ -12,7 +12,8 @@ public class ADBOperations {
 
     public void excecuteTapCommand(int x, int y) throws Exception {
         String command = String.format("adb shell input tap %d %d", x, y);
-        Process process = Runtime.getRuntime().exec(command);
+        ProcessBuilder processBuilder = new ProcessBuilder("sh", "-c", command);
+        Process process = processBuilder.start();
         process.waitFor();
 
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));

@@ -1,22 +1,45 @@
 package com.pinuspintar.be.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.File;
+import java.io.IOException;
+import java.lang.ProcessBuilder;
 
 public class ScreenshotTaker {
-
-    private static final Logger logger = LoggerFactory.getLogger(ScreenshotTaker.class);
-    private String screenshotDestination;
+    private final String screenshotDestination;
 
     public ScreenshotTaker(String screenshotDestination) {
         this.screenshotDestination = screenshotDestination;
     }
 
-    public void takeScreenshot() throws Exception {
-        String command = String.format("adb shell screencap -p > %s", screenshotDestination);
-        Process process = Runtime.getRuntime().exec(command);
-        process.waitFor();
+    public void takeScreenshot() {
+        try {
+            // Mengambil screenshot menggunakan ADB
+            ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "screencap", "-p", "/sdcard/screenshot.png");
+            Process process = processBuilder.inheritIO().start();
+            process.waitFor();
 
-        logger.info("Screenshot berhasil diambil dan disimpan di: {}", screenshotDestination);
+            // Menyalin screenshot dari perangkat ke folder lokal
+            processBuilder = new ProcessBuilder("adb", "pull", "/sdcard/screenshot.png", screenshotDestination);
+            process = processBuilder.inheritIO().start();
+            process.waitFor();
+
+            // Menghapus screenshot dari perangkat setelah menyalin
+            processBuilder = new ProcessBuilder("adb", "shell", "rm", "/sdcard/screenshot.png");
+            process = processBuilder.inheritIO().start();
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Tambahkan metode untuk men-tap di koordinat tertentu
+    public void tapScreen(int x, int y) {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("adb", "shell", "input", "tap", String.valueOf(x), String.valueOf(y));
+            Process process = processBuilder.inheritIO().start();
+            process.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
