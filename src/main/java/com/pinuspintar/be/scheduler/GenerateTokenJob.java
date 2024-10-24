@@ -47,9 +47,14 @@ public class GenerateTokenJob {
 		int retryCount = 0;
 		while (retryCount < 3) {
 			try {
-				int[][] coordinates = {{693, 1394}, {546, 418}};
+				int[][] coordinates = {{693, 1394}, {532, 427}, {405, 742}, {396, 1856}, {288, 1187}, {496, 2153}, {496, 2153}};
 				for (int[] coordinate : coordinates) {
 					screenshotTaker.tapScreen(coordinate[0], coordinate[1]);
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						logger.error("Jeda 3 detik terganggu setelah tap.");
+					}
 				}
 
 				screenshotTaker.takeScreenshot();
